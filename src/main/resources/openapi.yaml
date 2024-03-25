@@ -1,0 +1,139 @@
+openapi: 3.0.2
+info:
+  contact:
+    email: Domain_Team_DL@ds.com
+    name: Domain Team
+  description: Weather information
+  title:  Weather information
+  version: v1
+x-domain: weather
+x-sub-domain: forecast
+x-namespace:
+servers:
+  - url: https://gateway-stage-core.com/weather/api/
+    description: Dev environment with Stargate proxy
+  - url: https://gateway-core.com/weather/api/
+    description: Prod environment with Stargate proxy
+
+paths:
+  /weather-prediction/v1/forecast:
+    post:
+      tags:
+        - /weather-prediction/v1/search
+      description: weather-forecast information
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/WeatherRequest'
+      responses:
+        '200':
+          description: success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    type: object
+                    properties:
+                      warnings:
+                        $ref: '#/components/schemas/warningType'
+                  data:
+                    $ref: '#/components/schemas/WeatherResponse'
+        '400':
+          $ref: '#/components/responses/response400'
+        '500':
+          $ref: '#/components/responses/response500'
+components:
+  responses:
+    response400:
+      description: >-
+        BAD REQUEST <br/><br/>  Problem type: <br/>
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/warningType'
+    response500:
+      description: >-
+        INTERNAL SERVER ERROR <br/><br/>  Problem type: <br/>
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/warningType'
+
+  schemas:
+    WeatherRequest:
+      required:
+        - maxRecordsDetails
+        - serviceAttributes
+      properties:
+        serviceAttributes:
+          $ref: '#/components/schemas/serviceAttributes'
+        maxRecordsDetails:
+          $ref: '#/components/schemas/maxRecordsDetails'
+      type: object
+    WeatherResponse:
+      type: object
+      properties:
+        weatherDTOList:
+          items:
+            $ref: '#/components/schemas/list'
+          type: array
+    serviceAttributes:
+      properties:
+        location:
+          type: string
+      type: object
+    maxRecordsDetails:
+      type: object
+      properties:
+        maxCount:
+          type: integer
+          format: int32
+    list:
+      type: object
+      properties:
+        date:
+          type: string
+        maxTemperature:
+          type: string
+        minTemperature:
+          type: string
+        advisoryMessage:
+          type: string
+    warningType:
+      description: 'A non-fatal condition, generally indicating diminished quality of data.'
+      type: object
+      properties:
+        code:
+          description: 'An application-specific code, key to this condition.'
+          type: string
+          example: '62010'
+
+        detail:
+          description: >-
+            A human-readable explanation specific to this occurrence of the
+            problem.
+          type: string
+          example: >-
+            Input data was truncated because it exceeds the length defined by
+            the backend system.
+        field:
+          description: >-
+            The source of the error &dash; On what the API found fault, not
+            where the API found it (i.e., not the system on which the error
+            occurred).
+            May be either:
+            * A JSON Pointer [RFC6901](https://tools.ietf.org/html/rfc6901) to
+            the associated entity in the request document<br>
+              Example: "/data/issue/directionCode"<br>
+            * A simple name indicating which URI query parameter caused the
+            error.<br>
+              Example: "directionCode"
+          type: string
+x-serviceLevelObjectives:
+  x-responseTime: 5000
