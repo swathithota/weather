@@ -8,7 +8,6 @@ public class IndexController {
 
     @GetMapping("/weather")
     public String index() {
-        System.out.println("IndexController.index");
         return "index";
     }
 }

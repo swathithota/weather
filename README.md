@@ -46,6 +46,8 @@ This project implements a microservice to show the weather forecast for a given 
   }
   }
 
+- Web App: `http://localhost:8080/weather/`
+- Enter City name in Text Box and click on Get Weather Forecast button
 ## Configuration
 - API Key:  `{api.key}` in the `WeatherService.java` file  configured via application.yaml
 - API_URI: `{api.uri}` in the `WeatherService.java` file configured via application.yaml

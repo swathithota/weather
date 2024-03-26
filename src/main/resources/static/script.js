@@ -21,7 +21,7 @@ function fetchWeather() {
         body: JSON.stringify(requestBody)})
         .then(response => response.json())
         .then(data => {
-            displayWeather(data);
+            displayForecast(data);
         })
         .catch((error) => {
             console.error('Error fecthing weather forecast:', error);
