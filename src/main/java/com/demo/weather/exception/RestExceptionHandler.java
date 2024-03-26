@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class RestExceptionHandler {
 
-    @ExceptionHandler(InValidRequestException.class)
-    protected ResponseEntity<Object> handleNotValidRequestException(InValidRequestException ex) {
+    @ExceptionHandler(CustomRequestException.class)
+    protected ResponseEntity<Object> handleNotValidRequestException(CustomRequestException ex) {
         /* TODO This is an example based on two operations, POST and PUT. Replace this code based on your service functionality. */
 
         String validationErrorProblemType = ex.getMessage();

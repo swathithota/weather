@@ -1,13 +1,16 @@
 package com.demo.weather.service;
 
 import com.demo.weather.controller.WeatherControllerV1;
+import com.demo.weather.exception.CustomRequestException;
 import com.demo.weather.model.Data;
+import com.demo.weather.model.WarningType;
 import com.demo.weather.model.WeatherDTO;
 import com.demo.weather.model.WeatherResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -32,7 +35,11 @@ public class WeatherServiceV1 {
     private String API_URI;
 
 
+     @Autowired
+     RestTemplate restTemplate;
 
+    @Autowired
+    WeatherServiceImpV1 weatherServiceImpV1;
 
     public ResponseEntity<WeatherResponse> getWeatherForecast(Data data){
 
@@ -42,67 +49,63 @@ public class WeatherServiceV1 {
         HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        RestTemplate restTemplate = new RestTemplate();
-
-
-        ResponseEntity<String> responseEntity = restTemplate.exchange(API_URI, HttpMethod.GET,entity, String.class,location,API_KEY,cnt
-        );
-
-
-        JSONObject jsonObject = new JSONObject(responseEntity.getBody());
-        JSONArray forecasts = jsonObject.getJSONArray("list");
         WeatherResponse weatherResponse = new WeatherResponse();
-        List<WeatherDTO> weatherDTOList = new ArrayList<>();
-        StringBuilder output = new StringBuilder();
-        for(int i = 0; i<forecasts.length() && i < 3; i++){
-            JSONObject forcast = forecasts.getJSONObject(i);
+        try{
+            ResponseEntity<String> responseEntity = restTemplate.exchange(API_URI, HttpMethod.GET,entity, String.class,location,API_KEY,cnt
+            );
+            JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+            JSONArray forecasts = jsonObject.getJSONArray("list");
 
-            long timestamp = forcast.getLong("dt")*1000;
+            List<WeatherDTO> weatherDTOList = new ArrayList<>();
 
-            WeatherDTO weatherDTO = new WeatherDTO();
-            Date date = new Date(timestamp);
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            for(int i = 0; i<forecasts.length() && i < 3; i++){
+                JSONObject forcast = forecasts.getJSONObject(i);
 
-            double tempHigh = forcast.getJSONObject(("main")).getDouble("temp_max");
-            double tempLow= forcast.getJSONObject(("main")).getDouble("temp_min");
+                long timestamp = forcast.getLong("dt")*1000;
 
-            boolean rain =forcast.has("rain");
-            double windSpeed = forcast.getJSONObject("wind").getDouble("speed");
-            boolean thunderstorm = forcast.getJSONArray("weather").getJSONObject(0).getString("main").equals("Thunderstorm");
+                WeatherDTO weatherDTO = new WeatherDTO();
+                Date date = new Date(timestamp);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-            String message ="";
+                double tempHigh = forcast.getJSONObject(("main")).getDouble("temp_max");
+                double tempLow= forcast.getJSONObject(("main")).getDouble("temp_min");
 
-            if(rain){
-                message="Carry an umbrella. ";
+                boolean rain =forcast.has("rain");
+                double windSpeed = forcast.getJSONObject("wind").getDouble("speed");
+                boolean thunderstorm = forcast.getJSONArray("weather").getJSONObject(0).getString("main").equals("Thunderstorm");
+
+                if(rain){
+                    weatherServiceImpV1.setWeatherProcessingStrategy(new RainProcessingStrategy());
+                }
+                else if(tempHigh>40){
+                 weatherServiceImpV1.setWeatherProcessingStrategy(new HighTemperatureProcessingStrategy());
+                }
+                else if(windSpeed >10){
+                    weatherServiceImpV1.setWeatherProcessingStrategy(new HighWindsProcessingStrategy());
+                }
+                else if(thunderstorm){
+                    weatherServiceImpV1.setWeatherProcessingStrategy(new ThunderstormProcessingStrategy());
+                }
+                weatherDTO.setDate(simpleDateFormat.format(date));
+                weatherDTO.setMaxTemperature(String.valueOf(tempHigh));
+                weatherDTO.setMinTemperature(String.valueOf(tempLow));
+
+                String message =weatherServiceImpV1.processWeatherData();
+                if(!message.isEmpty()){
+                    weatherDTO.setAdvisoryMessage(message);
+                }
+                LOGGER.info(weatherDTO.toString());
+                weatherDTOList.add(weatherDTO);
+
             }
+            weatherResponse.setWeatherDTOList(weatherDTOList);
 
-            if(tempHigh>40){
-                message +="Use sunscreen lotion";
-            }
-
-            if(windSpeed >10){
-                message+="It's too windy, watch out! ";
-            }
-
-            if(thunderstorm){
-                message+="Don't step out! A Storn is brewing!";
-            }
-
-            weatherDTO.setDate(simpleDateFormat.format(date));
-            weatherDTO.setMaxTemperature(String.valueOf(tempHigh));
-            weatherDTO.setMinTemperature(String.valueOf(tempLow));
-
-            if(!message.isEmpty()){
-                weatherDTO.setAdvisoryMessage(message);
-            }
-            LOGGER.info(weatherDTO.toString());
-            weatherDTOList.add(weatherDTO);
-
+        }catch (Exception e){
+            throw new CustomRequestException(new WarningType("Exception occured","500",e.getMessage(),"exception"));
         }
-        weatherResponse.setWeatherDTOList(weatherDTOList);
 
-       return ResponseEntity.ok(weatherResponse);
+        return ResponseEntity.ok(weatherResponse);
+
     }
 }
