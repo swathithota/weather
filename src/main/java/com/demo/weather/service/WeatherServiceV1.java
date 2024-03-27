@@ -1,6 +1,5 @@
 package com.demo.weather.service;
 
-import com.demo.weather.controller.WeatherControllerV1;
 import com.demo.weather.exception.CustomRequestException;
 import com.demo.weather.model.Data;
 import com.demo.weather.model.WarningType;
@@ -12,7 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -39,7 +43,7 @@ public class WeatherServiceV1 {
      RestTemplate restTemplate;
 
     @Autowired
-    WeatherServiceImpV1 weatherServiceImpV1;
+    WeatherProcessorV1 weatherProcessorV1;
 
     public ResponseEntity<WeatherResponse> getWeatherForecast(Data data){
 
@@ -76,22 +80,25 @@ public class WeatherServiceV1 {
                 boolean thunderstorm = forcast.getJSONArray("weather").getJSONObject(0).getString("main").equals("Thunderstorm");
 
                 if(rain){
-                    weatherServiceImpV1.setWeatherProcessingStrategy(new RainProcessingStrategy());
-                }
-                else if(tempHigh>40){
-                 weatherServiceImpV1.setWeatherProcessingStrategy(new HighTemperatureProcessingStrategy());
+                    weatherProcessorV1.setWeatherProcessingStrategy(new RainProcessingStrategy());
                 }
                 else if(windSpeed >10){
-                    weatherServiceImpV1.setWeatherProcessingStrategy(new HighWindsProcessingStrategy());
+                    weatherProcessorV1.setWeatherProcessingStrategy(new HighWindsProcessingStrategy());
                 }
                 else if(thunderstorm){
-                    weatherServiceImpV1.setWeatherProcessingStrategy(new ThunderstormProcessingStrategy());
+                    weatherProcessorV1.setWeatherProcessingStrategy(new ThunderstormProcessingStrategy());
+                }
+                else if(tempHigh>40){
+                    weatherProcessorV1.setWeatherProcessingStrategy(new HighTemperatureProcessingStrategy());
+                }
+                else{
+                    weatherProcessorV1.setWeatherProcessingStrategy(new DefaultProcessingStrategy());
                 }
                 weatherDTO.setDate(simpleDateFormat.format(date));
                 weatherDTO.setMaxTemperature(String.valueOf(tempHigh));
                 weatherDTO.setMinTemperature(String.valueOf(tempLow));
 
-                String message =weatherServiceImpV1.processWeatherData();
+                String message =weatherProcessorV1.processWeatherData();
                 if(!message.isEmpty()){
                     weatherDTO.setAdvisoryMessage(message);
                 }

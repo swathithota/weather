@@ -1,15 +1,19 @@
 package com.demo.weather.validation;
 
 import com.demo.weather.exception.CustomRequestException;
-import com.demo.weather.model.*;
+import com.demo.weather.model.Data;
+import com.demo.weather.model.MaxRecordsDetails;
+import com.demo.weather.model.ServiceAttributes;
+import com.demo.weather.model.WeatherRequest;
+import com.demo.weather.model.WarningType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import static com.demo.weather.util.Util.BAD_REQUEST;
 
 @Component
-public class WeatherValidatorV1 implements RequestValidatorBase{
-    @Override
+public class WeatherValidatorV1 {
+
     public void isValidRequest(WeatherRequest weatherRequest) {
 
 

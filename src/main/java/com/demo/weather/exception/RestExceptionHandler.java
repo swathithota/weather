@@ -13,7 +13,6 @@ public class RestExceptionHandler {
     protected ResponseEntity<Object> handleNotValidRequestException(CustomRequestException ex) {
         /* TODO This is an example based on two operations, POST and PUT. Replace this code based on your service functionality. */
 
-        String validationErrorProblemType = ex.getMessage();
         WarningType warningType = ex.getWarningType();
         return new ResponseEntity<>(warningType, HttpStatus.BAD_REQUEST);
     }

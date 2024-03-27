@@ -5,6 +5,6 @@ import org.json.JSONObject;
 public class HighTemperatureProcessingStrategy implements WeatherProcessingStrategy{
     @Override
     public String processWeatherData() {
-        return " Use sunscreen lotion.";
+        return "Use sunscreen lotion.";
     }
 }

@@ -2,6 +2,12 @@
 
 ## Overview
 This project implements a microservice to show the weather forecast for a given city, including high and low temperatures for the next 3 days. It also provides additional advisories such as carrying an umbrella for rain, using sunscreen lotion for high temperatures, and warnings for high winds and thunderstorms.
+## Flowchart
+
+![Weather Flow Chart](https://github.com/swathithota/weather/blob/main/src/main/resources/static/weatherFlowChart.png)
+
+## Swagger Link
+[Swagger Link](src/main/resources/openapi.yaml)
 
 ## Design Patterns:
 1. **Layered Architecture**: Presentation -> Validation -> Service
@@ -23,17 +29,16 @@ This project implements a microservice to show the weather forecast for a given 
 - Spring Framework: 5.x
 - org.json: Used for parsing JSON responses from the OpenWeatherMap API.
 - Spring Boot: Used for bootstrapping the application.
+- Spock Test : used for testing.
 
 ## Installation
 1. Clone the repository: `git clone <repository-url>`
 2. Build the project: `mvn clean install`
-3. Run the application: `java -war target/weather-service.war`
+3. Run the application: `java -jar target/weather-service.jar`
 
 ## Usage
-- Endpoint: `http://localhost:8080/weather/api/weather-prediction/v1/forecast`
-- Method: POST 
+- Endpoint: POST Request `http://localhost:8080/weather/api/weather-prediction/v1/forecast`
 - Example: `http://localhost:8080/weather/api/weather-prediction/v1/forecast`
-- 
 - PayLoad : Replace {city} with value, {maxCount} with maxCount
 {
   "data": {
@@ -46,15 +51,12 @@ This project implements a microservice to show the weather forecast for a given 
   }
   }
 
-- Web App: `http://localhost:8080/weather/`
-- Enter City name in Text Box and click on Get Weather Forecast button
+- Web App URL: `http://localhost:8080/weather/`
+ Enter City name in Text Box and click on Get Weather Forecast button
 ## Configuration
 - API Key:  `{api.key}` in the `WeatherService.java` file  configured via application.yaml
 - API_URI: `{api.uri}` in the `WeatherService.java` file configured via application.yaml
 
 ## Contributing
 Contributions are welcome! Please open a pull request or issue to suggest improvements or report bugs.
-
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 

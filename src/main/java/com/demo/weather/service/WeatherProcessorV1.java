@@ -1,10 +1,9 @@
 package com.demo.weather.service;
 
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WeatherServiceImpV1 {
+public class WeatherProcessorV1 {
 
     private WeatherProcessingStrategy weatherProcessingStrategy;
 
